@@ -1,0 +1,89 @@
+// ============================================================================
+// BANK LOAN PORTFOLIO ANALYSIS
+// Power BI DAX Measures
+// Author: Yuvraj Aditya
+//
+// Purpose:
+// Contains the DAX measures used for portfolio performance, month-to-date
+// analysis, month-over-month comparison and loan-quality segmentation.
+//
+// Model tables:
+// - Factloans
+// - DimDate
+// - Select Measure
+// ============================================================================
+
+DEFINE
+    MEASURE 'Factloans'[Total Loan Applications] = COUNT('Factloans'[id])
+    MEASURE 'Factloans'[MTD Loan Applications] = CALCULATE (TOTALMTD ([Total Loan Applications], 'DimDate'[Date]))
+    MEASURE 'Factloans'[PMTD Loan Applications] = CALCULATE ([Total Loan Applications], DATESMTD (DATEADD('DimDate'[Date], -1, MONTH)))
+    MEASURE 'Factloans'[MoM Loan Applications] = ([MTD Loan Applications] - [PMTD Loan Applications])/ [PMTD Loan Applications]
+    MEASURE 'Factloans'[Total Funded Amount] = SUM('Factloans'[loan_amount])
+    MEASURE 'Factloans'[MTD Funded Amount] = CALCULATE (TOTALMTD([Total Funded Amount],'DimDate'[Date]))
+    MEASURE 'Factloans'[PMTD Total Funded Amount] = CALCULATE ([Total Funded Amount], DATESMTD (DATEADD('DimDate'[Date],-1, MONTH)))
+    MEASURE 'Factloans'[MoM Total Funded Amount] = ([MTD Funded Amount] - [PMTD Total Funded Amount])/ [PMTD Total Funded Amount]
+    MEASURE 'Factloans'[Total Amount Received] = SUM('Factloans'[total_payment])
+    MEASURE 'Factloans'[MTD Total Amount Received] = CALCULATE (TOTALMTD ([Total Amount Received], 'DimDate'[Date]))
+    MEASURE 'Factloans'[PMTD Total Received Amount] = CALCULATE ([Total Amount Received], DATESMTD (DATEADD('DimDate'[Date], -1, MONTH)))
+    MEASURE 'Factloans'[MoM Total Amount Received] = ([MTD Total Amount Received] - [PMTD Total Received Amount])/
+[PMTD Total Received Amount]
+    MEASURE 'Factloans'[Avg Interest Rate] = AVERAGE ('Factloans'[int_rate])
+    MEASURE 'Factloans'[MTD Avg Int Rate] = CALCULATE (TOTALMTD ([Avg Interest Rate], 'DimDate'[Date]))
+    MEASURE 'Factloans'[PMTD Avg Int Rate] = CALCULATE ([Avg Interest Rate], DATESMTD (DATEADD('DimDate'[Date], -1, MONTH)))
+    MEASURE 'Factloans'[MoM Avg Int Rate] = ([MTD Avg Int Rate] - [PMTD Avg Int Rate])/ [PMTD Avg Int Rate]
+    MEASURE 'Factloans'[Avg DTI] = AVERAGE('Factloans'[dti])
+    MEASURE 'Factloans'[MTD Avg DTI] = CALCULATE (TOTALMTD ([Avg DTI], 'DimDate'[Date]))
+    MEASURE 'Factloans'[PMTD Avg DTI] = CALCULATE ([Avg DTI], DATESMTD (DATEADD('DimDate'[Date], -1, MONTH)))
+    MEASURE 'Factloans'[MoM Avg DTI] = ([MTD Avg DTI] -[PMTD Avg DTI])/ [PMTD Avg DTI]
+    MEASURE 'Factloans'[Good Loan %] = (CALCULATE ([Total Loan Applications], 'Factloans'[Good vs Bad Loan] = "Good Loan")) / [Total Loan Applications]
+    MEASURE 'Factloans'[Good Loan Applications] = CALCULATE(
+    [Total Loan Applications], 
+    'Factloans'[Good vs Bad Loan] = "Good Loan"
+)
+    MEASURE 'Factloans'[Good Loan Funded Amount] = CALCULATE(
+    [Total Funded Amount], 
+    'Factloans'[Good vs Bad Loan] = "Good Loan"
+)
+    MEASURE 'Factloans'[Good Loan Received Amount] = CALCULATE ([Total Amount Received], 'Factloans'[Good vs Bad Loan] = "Good Loan")
+    MEASURE 'Factloans'[Bad Loan %] = (CALCULATE ([Total Loan Applications], 'Factloans'[Good vs Bad Loan] = "Bad Loan")) / [Total Loan Applications]
+    MEASURE 'Factloans'[Bad Loan Applications] = CALCULATE(
+    [Total Loan Applications], 
+    'Factloans'[Good vs Bad Loan] = "Bad Loan"
+)
+    MEASURE 'Factloans'[Bad Loan Funded Amount] = CALCULATE(
+    [Total Funded Amount], 
+    'Factloans'[Good vs Bad Loan] = "Bad Loan"
+)
+    MEASURE 'Factloans'[Bad Loan Received Amount] = CALCULATE ([Total Amount Received], 'Factloans'[Good vs Bad Loan] = "Bad Loan")
+
+EVALUATE
+    SUMMARIZECOLUMNS(
+        "Total Loan Applications", [Total Loan Applications],
+        "MTD Loan Applications", [MTD Loan Applications],
+        "PMTD Loan Applications", [PMTD Loan Applications],
+        "MoM Loan Applications", [MoM Loan Applications],
+        "Total Funded Amount", [Total Funded Amount],
+        "MTD Funded Amount", [MTD Funded Amount],
+        "PMTD Total Funded Amount", [PMTD Total Funded Amount],
+        "MoM Total Funded Amount", [MoM Total Funded Amount],
+        "Total Amount Received", [Total Amount Received],
+        "MTD Total Amount Received", [MTD Total Amount Received],
+        "PMTD Total Received Amount", [PMTD Total Received Amount],
+        "MoM Total Amount Received", [MoM Total Amount Received],
+        "Avg Interest Rate", [Avg Interest Rate],
+        "MTD Avg Int Rate", [MTD Avg Int Rate],
+        "PMTD Avg Int Rate", [PMTD Avg Int Rate],
+        "MoM Avg Int Rate", [MoM Avg Int Rate],
+        "Avg DTI", [Avg DTI],
+        "MTD Avg DTI", [MTD Avg DTI],
+        "PMTD Avg DTI", [PMTD Avg DTI],
+        "MoM Avg DTI", [MoM Avg DTI],
+        "Good Loan %", [Good Loan %],
+        "Good Loan Applications", [Good Loan Applications],
+        "Good Loan Funded Amount", [Good Loan Funded Amount],
+        "Good Loan Received Amount", [Good Loan Received Amount],
+        "Bad Loan %", [Bad Loan %],
+        "Bad Loan Applications", [Bad Loan Applications],
+        "Bad Loan Funded Amount", [Bad Loan Funded Amount],
+        "Bad Loan Received Amount", [Bad Loan Received Amount]
+    )
